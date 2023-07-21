@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-    postgres:
+    metadata:
         image: postgres:9.6
         environment:
             - POSTGRES_USER=airflow
@@ -10,22 +10,42 @@ services:
             options:
                 max-size: 10m
                 max-file: "3"
+        ports:
+            - "5433:5432"
+    
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+        volumes:
+            - ./store_files:/var/lib/postgresql/store_sales_data
+        ports:
+            - "5434:5432"
 
     webserver:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:
+            - metadata
             - postgres
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@metadata/airflow
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
         volumes:
             - ./dags:/usr/local/airflow/dags
-            # - ./plugins:/usr/local/airflow/plugins
+            - ./store_files:/usr/local/airflow/store_files_airflow
+            - ./sql_files:/usr/local/airflow/sql_files
         ports:
             - "8080:8080"
         command: webserver
