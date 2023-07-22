@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-    metadata:
+    postgres:
         image: postgres:9.6
         environment:
             - POSTGRES_USER=airflow
@@ -13,7 +13,7 @@ services:
         ports:
             - "5433:5432"
     
-    postgres:
+    store_data:
         image: postgres:9.6
         environment:
             - POSTGRES_USER=${POSTGRES_USER}
@@ -24,7 +24,7 @@ services:
                 max-size: 10m
                 max-file: "3"
         volumes:
-            - ./store_files:/var/lib/postgresql/store_sales_data
+            - ./store_files:/store_files_postgres/
         ports:
             - "5434:5432"
 
@@ -32,12 +32,12 @@ services:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:
-            - metadata
             - postgres
+            - store_data
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
-            - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@metadata/airflow
+            - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
         logging:
             options:
                 max-size: 10m
