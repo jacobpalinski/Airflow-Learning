@@ -21,5 +21,7 @@ t2 = PythonOperator(task_id = 'clean_raw_csv', python_callable = data_cleaner, d
 
 t3 = PostgresOperator(task_id = 'create_postgres_table', postgres_conn_id = 'postgres_conn', sql = "create_table.sql", dag = dag)
 
-t1 >> t2 >> t3
+t4 = PostgresOperator(task_id = 'insert_into_table', postgres_conn_id = 'postgres_conn', sql = "insert_into_table.sql", dag = dag)
+
+t1 >> t2 >> t3 >> t4 # For concurrent operations using [] e.g [t5,t6]
 
