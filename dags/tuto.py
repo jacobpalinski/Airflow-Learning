@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
-    "start_date": datetime(2023, 7, 21),
+    "start_date": datetime(2023, 7, 24),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -41,8 +41,7 @@ t3 = BashOperator(
     task_id="templated",
     bash_command=templated_command,
     params={"my_param": "Parameter I passed in"},
-    dag=dag,
+    dag=dag
 )
 
-t2.set_upstream(t1)
-t3.set_upstream(t1)
+t1 >> t2 >> t3
